@@ -4,6 +4,7 @@ const User = require('../models/User');
 const {body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
+var fetchuser = require('../middleware/fetchuser');
 
 const JWT_SECRET = 'Harryisagood$boy';
 
@@ -54,7 +55,7 @@ router.post('/createuser',[
 })
 
 
-// AUthenticate a user using : POST "/api/auth/Login". No Login required
+// ROUND 2 : Authenticate a user using : POST "/api/auth/Login". No Login required
 router.post('/login',[
     body('email', 'Enter a valid email : ').isEmail(),
     body('password', 'Password cannot be blank').exists(),
@@ -91,5 +92,21 @@ router.post('/login',[
         res.status(500).send("Internal Server Error ");
     }
 })
+
+
+//ROUTE 3 : Get Loggedin user details using POST : "/api/auth/getuser". No Login required.
+
+router.post('/getuser',fetchuser,async(req,res) => {
+    try{
+        userId = req.user.id;
+        const user = await User.findById(userId).select("-password");
+        //this will select all fields except password
+        res.send(user);
+    }catch(error){
+        console.error(error.message);
+        res.status(500).send("Internal Server Error");
+    }
+})
+
 
 module.exports = router
